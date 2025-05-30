@@ -1,0 +1,776 @@
+<!DOCTYPE html>
+<html lang="pt-pt">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Análise do Gene KRAS | Projeto Bioinformática</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+    rel="stylesheet">
+  <style>
+    /* Definição de variáveis de cor para fácil manutenção e consistência */
+    :root {
+      --gene-primary: #2C5D8F; /* Azul científico principal */
+      --gene-secondary: #4CAF50; /* Verde para biologia/destaques positivos */
+      --gene-accent: #FFC107; /* Amarelo para realces e botões secundários */
+      --dark: #1a1a2e; /* Cor escura para texto ou fundos */
+      --light: #ffffff; /* Cor clara (branco) */
+      --gray: #f8f9fa; /* Cinza claro para fundos de secção */
+      --text: #333333; /* Cor principal do texto */
+      --border-color: #e0e0e0; /* Cor para bordas */
+    }
+
+    /* Reset básico e configuração da fonte principal */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Poppins', sans-serif;
+    }
+
+    /* Estilos gerais do corpo da página */
+    body {
+      color: var(--text);
+      line-height: 1.6; /* Espaçamento entre linhas para melhor legibilidade */
+      overflow-x: hidden; /* Evita scroll horizontal indesejado */
+    }
+
+    /* Container principal para centrar conteúdo */
+    .container {
+      width: 90%;
+      max-width: 1200px; /* Largura máxima para ecrãs grandes */
+      margin: 0 auto; /* Centra o container */
+      padding: 0 15px; /* Espaçamento lateral */
+    }
+
+    /* Cabeçalho fixo */
+    header {
+      background-color: rgba(255, 255, 255, 0.95); /* Fundo branco semi-transparente */
+      position: fixed; /* Fica no topo ao fazer scroll */
+      width: 100%;
+      z-index: 1000; /* Garante que fica acima de outros elementos */
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); /* Sombra subtil */
+      transition: all 0.3s ease; /* Transição suave para futuras animações */
+    }
+
+    /* Navegação dentro do cabeçalho */
+    nav {
+      display: flex; /* Alinha logo e links horizontalmente */
+      justify-content: space-between; /* Espaça o logo e os links */
+      align-items: center; /* Centra verticalmente */
+      padding: 20px 0; /* Espaçamento interno vertical */
+    }
+
+    /* Logo */
+    .logo {
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: var(--gene-primary);
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+    }
+
+    .logo span {
+      color: var(--gene-secondary); /* Cor de destaque no logo */
+    }
+
+    /* Lista de links de navegação */
+    .nav-links {
+      display: flex;
+      list-style: none; /* Remove marcadores da lista */
+    }
+
+    .nav-links li {
+      margin-left: 30px; /* Espaçamento entre itens do menu */
+    }
+
+    .nav-links a {
+      text-decoration: none;
+      color: var(--text);
+      font-weight: 500;
+      transition: color 0.3s;
+      position: relative; /* Para o sublinhado animado */
+    }
+
+    .nav-links a:hover {
+      color: var(--gene-primary); /* Cor ao passar o rato */
+    }
+
+    /* Efeito de sublinhado animado para links de navegação */
+    .nav-links a::after {
+      content: '';
+      position: absolute;
+      bottom: -5px;
+      left: 0;
+      width: 0; /* Começa sem largura */
+      height: 2px;
+      background-color: var(--gene-primary);
+      transition: width 0.3s ease; /* Anima a largura */
+    }
+
+    .nav-links a:hover::after {
+      width: 100%; /* Mostra o sublinhado completo ao passar o rato */
+    }
+
+    /* Estilo base para botões */
+    .btn {
+      display: inline-block;
+      padding: 12px 30px;
+      background: linear-gradient(45deg, var(--gene-primary), var(--gene-secondary));
+      color: var(--light);
+      border-radius: 30px; /* Botões arredondados */
+      text-decoration: none;
+      font-weight: 600;
+      transition: all 0.3s;
+      border: none;
+      cursor: pointer;
+      box-shadow: 0 4px 15px rgba(44, 93, 143, 0.3);
+    }
+
+    .btn:hover {
+      transform: translateY(-3px); /* Efeito de elevação */
+      box-shadow: 0 8px 25px rgba(44, 93, 143, 0.4);
+    }
+
+    /* Estilo para botões secundários */
+    .btn-secondary {
+      background: linear-gradient(45deg, var(--gene-accent), #FFD54F); /* Gradiente amarelo */
+      color: var(--dark); /* Texto escuro para contraste */
+      box-shadow: 0 4px 15px rgba(255, 193, 7, 0.3);
+    }
+
+    .btn-secondary:hover {
+      box-shadow: 0 8px 25px rgba(255, 193, 7, 0.4);
+    }
+
+    /* Botão "hamburguer" para menu mobile (escondido por defeito) */
+    .menu-toggle {
+      display: none;
+      cursor: pointer;
+      font-size: 1.5rem;
+      color: var(--gene-primary);
+    }
+
+    /* Secção "Hero" (principal, de boas-vindas) */
+    .hero {
+      background: linear-gradient(135deg, rgba(22, 43, 78, 0.7), rgba(76,175,80, 0.5)), url('kras-background.jpg') center/cover no-repeat;
+      min-height: 100vh; /* Altura mínima igual à da viewport */
+      display: flex;
+      align-items: center; /* Centra conteúdo verticalmente */
+      position: relative;
+      overflow: hidden; /* Evita que elementos decorativos causem scroll */
+    }
+
+    .hero-content {
+      width: 60%; /* Largura do conteúdo textual */
+      animation: fadeInLeft 1s ease; /* Animação de entrada */
+      padding-top: 80px; /* Espaço para o cabeçalho fixo */
+      margin-left: 2cm; /* Pequeno avanço da margem */
+    }
+
+    .hero h1 {
+      font-size: 3.2rem;
+      font-weight: 800;
+      margin-bottom: 20px;
+      line-height: 1.2;
+      color: var(--light); /* Texto claro para contraste com fundo escuro */
+    }
+
+    .hero h1 span {
+      color: var(--gene-accent); /* Destaque no título */
+    }
+
+    .hero p {
+      font-size: 1.2rem;
+      margin-bottom: 30px;
+      color: var(--gray); /* Texto cinza claro */
+    }
+
+    /* Estilo base para secções de conteúdo */
+    .section {
+      padding: 80px 0; /* Espaçamento vertical */
+    }
+
+    /* Cabeçalho dentro de cada secção */
+    .section-header {
+      text-align: center;
+      margin-bottom: 60px;
+    }
+
+    .section-header h2 {
+      font-size: 2.5rem;
+      font-weight: 700;
+      margin-bottom: 20px;
+      position: relative;
+      display: inline-block; /* Para o sublinhado decorativo */
+      color: var(--gene-primary);
+    }
+
+    /* Sublinhado decorativo para títulos de secção */
+    .section-header h2::after {
+      content: '';
+      position: absolute;
+      bottom: -10px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 70px;
+      height: 3px;
+      background: linear-gradient(to right, var(--gene-primary), var(--gene-secondary));
+    }
+
+    .section-header p {
+      font-size: 1.1rem;
+      color: #666; /* Texto de subtítulo mais claro */
+      max-width: 700px; /* Limita largura para melhor leitura */
+      margin: 0 auto; /* Centra */
+    }
+
+    /* Estilos para justificar texto nos parágrafos principais das secções */
+    #sobre-kras > .container > div > p,
+    #discussao > .container > div > p {
+        text-align: justify;
+        hyphens: auto; /* Ajuda na quebra de palavras para texto justificado */
+        -webkit-hyphens: auto; /* Para Safari */
+        -ms-hyphens: auto; /* Para IE */
+        word-break: break-word; /* Fallback para quebra de palavras longas */
+        margin-bottom: 1em; /* Espaçamento entre parágrafos */
+    }
+
+    /* Secção de Resultados */
+    .results-section {
+      background-color: white; /* Fundo branco para esta secção */
+    }
+
+    .results-grid {
+      display: grid; /* Layout em grelha para os cards */
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); /* Grelha responsiva */
+      gap: 30px; /* Espaçamento entre cards */
+    }
+
+    /* Estilo individual de cada card de resultado */
+    .result-card {
+      background-color: var(--gray);
+      border-radius: 10px;
+      overflow: hidden; /* Para que a imagem não ultrapasse as bordas arredondadas */
+      transition: all 0.3s ease;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+      display: flex;
+      flex-direction: column; /* Conteúdo empilhado verticalmente */
+    }
+
+    .result-card:hover {
+      transform: translateY(-10px); /* Efeito de elevação ao passar o rato */
+      box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Imagem dentro do card de resultado */
+    .result-img {
+      height: 200px;
+      background-color: #ddd; /* Cor de fallback se a imagem não carregar */
+      background-size: cover; /* Imagem cobre a área */
+      background-position: center; /* Centra a imagem */
+      border-bottom: 3px solid var(--gene-secondary); /* Detalhe visual */
+      cursor: zoom-in; /* Indica que a imagem pode ser ampliada */
+    }
+
+    /* Conteúdo textual do card de resultado */
+    .result-content {
+      padding: 25px;
+      flex-grow: 1; /* Permite que o conteúdo ocupe o espaço restante */
+      display: flex;
+      flex-direction: column;
+    }
+
+    .result-card h3 {
+      font-size: 1.4rem;
+      margin-bottom: 12px;
+      color: var(--gene-primary);
+    }
+
+    .result-card p {
+      margin-bottom: 20px;
+      color: #666;
+      flex-grow: 1;
+      text-align: justify; /* Justifica texto dentro dos cards */
+      hyphens: auto;
+      -webkit-hyphens: auto;
+      -ms-hyphens: auto;
+      word-break: break-word;
+    }
+
+    /* Rodapé */
+    footer {
+      background-color: var(--dark);
+      color: white;
+      padding: 60px 0 30px;
+    }
+
+    .footer-content {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr 1fr; /* Layout do rodapé */
+      gap: 30px;
+    }
+
+    .footer-logo {
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: white;
+      text-decoration: none;
+      margin-bottom: 20px;
+      display: inline-block;
+    }
+
+    .footer-logo span {
+      color: var(--gene-secondary);
+    }
+
+    .footer-about p {
+      margin-bottom: 20px;
+      color: #bbb; /* Texto mais claro no rodapé */
+    }
+
+    .footer-links h3,
+    .footer-newsletter h3 { /* Reutilizado para "Unidade Curricular" */
+      font-size: 1.2rem;
+      margin-bottom: 20px;
+      position: relative;
+      padding-bottom: 10px;
+    }
+
+    .footer-links h3::after,
+    .footer-newsletter h3::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 40px;
+      height: 2px;
+      background-color: var(--gene-secondary);
+    }
+
+    .footer-links ul {
+      list-style: none;
+    }
+
+    .footer-links li {
+      margin-bottom: 10px;
+    }
+
+    .footer-links a {
+      color: #bbb;
+      text-decoration: none;
+      transition: all 0.3s;
+    }
+
+    .footer-links a:hover {
+      color: var(--gene-secondary);
+      padding-left: 5px; /* Pequeno efeito ao passar o rato */
+    }
+
+    .footer-newsletter p { /* Reutilizado para "Unidade Curricular" */
+      color: #bbb;
+      margin-bottom: 10px; /* Ajustado margin */
+    }
+
+    .footer-bottom {
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      margin-top: 40px;
+      padding-top: 20px;
+      text-align: center;
+      color: #bbb;
+      font-size: 0.9rem;
+    }
+
+    /* Animações */
+    @keyframes fadeInLeft {
+      from { opacity: 0; transform: translateX(-50px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+
+    /* Media Queries para Responsividade */
+    @media (max-width: 992px) { /* Ecrãs médios (tablets) */
+      .hero-content { width: 100%; margin-left: 0; text-align: center; }
+      .results-grid { grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); }
+      .footer-content { grid-template-columns: 1fr 1fr; gap: 30px; }
+    }
+
+    @media (max-width: 768px) { /* Ecrãs pequenos (telemóveis) */
+      body { font-size: 0.9rem; }
+      .menu-toggle { display: block; } /* Mostra o botão hamburguer */
+      .nav-links { /* Estilo do menu mobile */
+        position: fixed; top: 78px; /* Altura aproximada do header */
+        left: 0; background-color: white;
+        width: 100%; height: 0; /* Começa fechado */
+        overflow: hidden; flex-direction: column;
+        align-items: center; transition: height 0.3s ease-in-out;
+        box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
+      }
+      .nav-links.active { height: auto; padding: 20px 0; } /* Menu aberto */
+      .nav-links li { margin: 15px 0; width: 100%; text-align: center; }
+      .nav-links a { display: block; padding: 10px 0; }
+      .nav-links .btn { margin-top: 10px; width: 50%; } /* Botão dentro do menu mobile */
+
+      .hero h1 { font-size: 2.2rem; }
+      .hero p { font-size: 1rem; }
+      .section-header h2 { font-size: 2rem; }
+    }
+
+    @media (max-width: 576px) { /* Ecrãs muito pequenos */
+      .footer-content { grid-template-columns: 1fr; } /* Rodapé numa só coluna */
+      .hero h1 { font-size: 1.8rem; }
+    }
+
+    /* Estilos para o Modal de Ampliação de Imagem */
+    .image-modal {
+      display: none; /* Escondido por defeito */
+      position: fixed; /* Fica na viewport */
+      z-index: 1001; /* Acima de outros elementos */
+      padding-top: 50px;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      overflow: auto; /* Permite scroll se a imagem for muito alta */
+      background-color: rgba(0,0,0,0.9); /* Fundo escuro semi-transparente */
+    }
+
+    .modal-content { /* Imagem dentro do modal */
+      margin: auto;
+      display: block;
+      width: auto; /* Mantém proporção da imagem */
+      height: auto; /* Mantém proporção da imagem */
+      max-width: 90%; /* Largura máxima relativa ao ecrã */
+      max-height: 80vh; /* Altura máxima relativa ao ecrã */
+      animation-name: zoomModal; /* Animação de entrada */
+      animation-duration: 0.6s;
+    }
+
+    @keyframes zoomModal { /* Animação de zoom para o modal */
+      from {transform:scale(0)}
+      to {transform:scale(1)}
+    }
+
+    /* Botão para fechar o modal */
+    .close-modal-btn {
+      position: absolute;
+      top: 15px;
+      right: 35px;
+      color: #f1f1f1;
+      font-size: 40px;
+      font-weight: bold;
+      transition: 0.3s;
+    }
+
+    .close-modal-btn:hover,
+    .close-modal-btn:focus {
+      color: #bbb;
+      text-decoration: none;
+      cursor: pointer;
+    }
+
+    /* Legenda da imagem no modal */
+    #modal-caption {
+      margin: 15px auto;
+      display: block;
+      width: 80%;
+      max-width: 700px;
+      text-align: center;
+      color: #ccc;
+      padding: 10px 0;
+    }
+
+    /* Evita scroll do corpo da página quando o modal está ativo */
+    body.modal-active {
+        overflow: hidden;
+    }
+  </style>
+</head>
+
+<body>
+  <!-- Cabeçalho e Navegação -->
+  <header>
+    <div class="container">
+      <nav>
+        <a href="#inicio" class="logo">KRAS<span>Gene</span></a>
+        <div class="menu-toggle" id="menu-toggle-button">☰</div>
+        <ul class="nav-links" id="nav-links-menu">
+          <li><a href="#inicio">Início</a></li>
+          <li><a href="#sobre-kras">Sobre o KRAS</a></li>
+          <li><a href="#resultados">Resultados</a></li>
+          <li><a href="#discussao">Discussão</a></li>
+          <li><a href="#Grupo">Grupo</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Secção Principal (Hero) -->
+  <section class="hero" id="inicio">
+    <div class="container">
+        <div class="hero-content">
+            <h1>Análise Bioinformática do Oncogene <span>KRAS</span></h1>
+            <p>Este trabalho explora algumas características do gene KRAS, um interveniente importante no desenvolvimento de vários tipos de cancro, através de ferramentas de bioinformática.</p>
+            <a href="#sobre-kras" class="btn">Saber Mais</a>
+            <a href="#resultados" class="btn btn-secondary" style="margin-left: 15px;">Ver Resultados</a>
+        </div>
+    </div>
+  </section>
+
+  <!-- Secção "Sobre o KRAS" -->
+  <section class="section" id="sobre-kras">
+    <div class="container">
+      <div class="section-header">
+        <h2>O Gene KRAS</h2>
+        <p>Uma breve introdução à sua função, características e relevância em doenças.</p>
+      </div>
+      <div>
+        <h3>Introdução e Função Biológica</h3>
+        <p>
+          O gene KRAS (Kirsten rat sarcoma viral oncogene homolog) é um gene que pertence à família RAS. No nosso organismo, ele tem um papel de proto-oncogene, ou seja, um gene normal que pode tornar-se num oncogene (um gene promotor de cancro) se sofrer certas mutações. A sua função principal é produzir a proteína KRAS. Esta proteína é como um interruptor molecular dentro das nossas células: quando está "ligada" (ativa), ela transmite sinais que dizem à célula para crescer e dividir-se. Quando está "desligada" (inativa), esses sinais param. Este controlo é fundamental para que as células se comportem de forma ordenada. A proteína KRAS faz parte de um sistema complexo que regula processos vitais como o crescimento, a proliferação e a sobrevivência das células.
+        </p>
+        <br>
+        <h3>Caracterização do Gene e Proteína</h3>
+        <p>
+          Em humanos, o gene KRAS encontra-se no cromossoma 12. A proteína KRAS que ele codifica é relativamente pequena e, para funcionar corretamente, precisa de estar ancorada junto à membrana da célula. Essa ancoragem acontece graças a modificações químicas que a proteína sofre após ser produzida. A estrutura da proteína KRAS tem regiões muito importantes, como aquela que se liga a uma molécula chamada GTP (para ficar ativa) ou GDP (para ficar inativa). Se ocorrerem mutações em pontos específicos do gene KRAS, a proteína pode ficar permanentemente "ligada", mesmo sem receber sinais para isso. Isto leva a um crescimento e divisão celular descontrolados, o que é uma característica comum no desenvolvimento de cancros, como o do pâncreas, o colorretal e o do pulmão. Mutações no KRAS podem também estar associadas a algumas síndromes raras de desenvolvimento, conhecidas como rasopatias.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Secção "Resultados da Análise Bioinformática" -->
+  <section class="section results-section" id="resultados">
+    <div class="container">
+      <div class="section-header">
+        <h2>Resultados da Análise</h2>
+        <p>Aqui apresentamos os principais achados da nossa pesquisa bioinformática sobre o gene KRAS.</p>
+      </div>
+      <div class="results-grid">
+        <!-- Card 1: BLASTp -->
+        <div class="result-card">
+          <div class="result-img" style="background-image: url('blast-icon.png'); background-size: contain; background-repeat: no-repeat;"></div>
+          <div class="result-content">
+            <h3>Homólogos da Proteína KRAS (BLASTp)</h3>
+            <p>Para encontrar proteínas semelhantes à KRAS humana noutras espécies, usámos a ferramenta BLASTp. Esta pesquisa compara a sequência da nossa proteína com milhões de outras numa base de dados. Encontrámos várias proteínas homólogas (com origem evolutiva comum) em espécies como o chimpanzé, o ratinho e até o peixe-zebra. A elevada semelhança entre estas proteínas, mesmo em organismos distantes evolutivamente, sugere que a função da KRAS é muito importante e foi conservada ao longo da evolução.</p>
+          </div>
+        </div>
+        <!-- Card 2: MSA (Alinhamento Múltiplo de Sequências) -->
+        <div class="result-card">
+          <div class="result-img" style="background-image: url('msa_kras_thumbnail.png');"></div>
+          <div class="result-content">
+            <h3>Alinhamento Múltiplo de Sequências (MSA)</h3>
+            <p>Depois de encontrar os homólogos, alinhámos as suas sequências de aminoácidos usando o Clustal Omega. Um alinhamento múltiplo permite ver quais as regiões da proteína que são mais parecidas (conservadas) entre as diferentes espécies. Observámos que certas zonas da KRAS, especialmente aquelas envolvidas na sua função de "interruptor" e na interação com outras moléculas, são quase idênticas em todos os homólogos. Isto reforça a ideia de que estas regiões são cruciais para a sua atividade biológica.</p>
+          </div>
+        </div>
+        <!-- Card 3: Árvore Filogenética -->
+        <div class="result-card">
+          <div class="result-img" style="background-image: url('phylogenetic_tree_kras_thumbnail.png');"></div>
+          <div class="result-content">
+            <h3>Árvore Filogenética</h3>
+            <p>Com base no alinhamento, construímos uma árvore filogenética. Esta árvore é como uma "árvore genealógica" das proteínas, mostrando as suas relações evolutivas. As proteínas KRAS de espécies mais próximas, como humanos e chimpanzés, aparecem agrupadas em ramos vizinhos, enquanto as de espécies mais distantes, como peixes, formam ramos mais afastados. Esta análise ajuda-nos a perceber como a proteína KRAS evoluiu ao longo do tempo nas diferentes linhagens de seres vivos.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Secção "Discussão" -->
+  <section class="section" id="discussao" style="background-color: var(--gray);">
+    <div class="container">
+      <div class="section-header">
+        <h2>Discussão dos Resultados</h2>
+        <p>Uma breve reflexão sobre o que os nossos resultados significam.</p>
+      </div>
+      <div>
+        <p>A análise bioinformática que realizámos permitiu-nos confirmar a importância e a conservação da proteína KRAS. A identificação de homólogos em várias espécies e o elevado grau de semelhança nas regiões funcionais, como vimos no alinhamento múltiplo, indicam que a KRAS desempenha um papel fundamental que se manteve ao longo de milhões de anos de evolução. A árvore filogenética que construímos reflete as relações evolutivas esperadas entre as espécies analisadas, o que valida a nossa abordagem. Estes resultados, em conjunto, mostram como as ferramentas de bioinformática podem ser usadas para estudar a função e a evolução de genes importantes como o KRAS.</p>
+        <br>
+        <h3>Principais Dificuldades e Conclusão</h3>
+        <p>
+          Durante este trabalho, uma das dificuldades iniciais foi a seleção de um conjunto de sequências que permitisse uma boa resolução filogenética; por exemplo, considerámos a necessidade de incluir mais sequências de primatas para melhor detalhar as relações dentro desse grupo, embora para esta apresentação tenhamos focado num conjunto mais amplo. Outro desafio foi a familiarização com as diversas ferramentas bioinformáticas, especialmente o iTOL (Interactive Tree Of Life) no início, para a visualização e anotação da árvore filogenética.
+          <br><br>
+          Em conclusão, este estudo, embora introdutório, ilustra bem o poder da bioinformática para investigar questões biológicas complexas. Através da análise comparativa de sequências e da construção filogenética, foi possível observar a conservação funcional do gene KRAS e diferenciar as relações entre as diferentes famílias e ordens de vertebrados incluídas na nossa análise, como peixes, anfíbios, aves e mamíferos (incluindo primatas e roedores). As ferramentas usadas são essenciais para a investigação científica moderna.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Secção "Grupo" -->
+  <section class="section" id="Grupo">
+    <div class="container">
+      <div class="section-header">
+        <h2>Grupo do Projeto</h2>
+        <p>Trabalho realizado no âmbito da Unidade Curricular de Laboratórios de Bioinformática.</p>
+      </div>
+      <div style="text-align: center;">
+          <p>Artur Anselmo, João Simões, Marcos Torres</p>
+          <p>Licenciatura em Bioinformática</p>
+          <p>Universidade do Porto, Ano Letivo 2024/2025</p>
+          <p>Docentes: Prof. Miriam Santos & Prof. Pedro G. Ferreira</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Rodapé -->
+  <footer>
+    <div class="container">
+        <div class="footer-content">
+            <div class="footer-about">
+                <a href="#inicio" class="footer-logo">KRAS<span>Gene</span></a>
+                <p>Projeto de análise bioinformática do gene KRAS para Laboratórios de Bioinformática, U.Porto.</p>
+            </div>
+            <div class="footer-links">
+                <h3>Recursos Úteis</h3>
+                <ul>
+                    <li><a href="https://www.ncbi.nlm.nih.gov/gene" target="_blank" rel="noopener noreferrer">NCBI Gene</a></li>
+                    <li><a href="https://www.uniprot.org/" target="_blank" rel="noopener noreferrer">UniProt</a></li>
+                    <li><a href="https://blast.ncbi.nlm.nih.gov/" target="_blank" rel="noopener noreferrer">NCBI BLAST</a></li>
+                    <li><a href="https://itol.embl.de/" target="_blank" rel="noopener noreferrer">iTOL</a></li>
+                </ul>
+            </div>
+            <div class="footer-newsletter"> <!-- Reutilizado para info da UC -->
+                <h3>Unidade Curricular</h3>
+                <p>Laboratórios de Bioinformática</p>
+                <p>FCUP</p>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            © <span id="currentYear"></span> Análise KRAS - Lab. Bioinformática. Todos os direitos reservados.
+        </div>
+    </div>
+  </footer>
+
+  <!-- Modal para Ampliar Imagem -->
+  <div id="image-viewer-modal" class="image-modal">
+    <span class="close-modal-btn">×</span>
+    <img class="modal-content" id="modal-image-content">
+    <div id="modal-caption"></div>
+  </div>
+
+  <!-- Scripts JavaScript -->
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        // --- Funcionalidade Menu Toggle para Mobile ---
+        const menuToggleButton = document.getElementById('menu-toggle-button');
+        const navLinksMenu = document.getElementById('nav-links-menu');
+
+        if (menuToggleButton && navLinksMenu) {
+            menuToggleButton.addEventListener('click', () => {
+                navLinksMenu.classList.toggle('active'); // Alterna a classe 'active' para mostrar/esconder
+            });
+            // Fecha o menu mobile ao clicar num link (exceto se for um botão dentro do menu)
+            navLinksMenu.querySelectorAll('a:not(.btn)').forEach(link => {
+                link.addEventListener('click', () => {
+                    if (navLinksMenu.classList.contains('active')) {
+                        navLinksMenu.classList.remove('active');
+                    }
+                });
+            });
+        }
+
+        // --- Smooth Scroll para links âncora ---
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                const targetId = this.getAttribute('href');
+                if (targetId === "#") return; // Ignora links vazios
+
+                const targetElement = document.querySelector(targetId);
+                if (targetElement) {
+                    // Se não for um link do menu hamburguer que está a ser fechado, previne o comportamento padrão
+                    if (!(this.closest('.nav-links.active') && navLinksMenu.classList.contains('active'))) {
+                       // e.preventDefault(); // Descomentado pois a prevenção padrão pode ser desejável
+                    }
+                    const headerOffset = document.querySelector('header')?.offsetHeight || 0; // Altura do cabeçalho
+                    const elementPosition = targetElement.getBoundingClientRect().top; // Posição do elemento relativa à viewport
+                    const offsetPosition = elementPosition + window.pageYOffset - headerOffset; // Posição final ajustada
+
+                    window.scrollTo({
+                        top: offsetPosition,
+                        behavior: "smooth" // Animação de scroll suave
+                    });
+                }
+            });
+        });
+
+        // --- Atualizar ano no footer ---
+        const yearSpan = document.getElementById('currentYear');
+        if (yearSpan) {
+            yearSpan.textContent = new Date().getFullYear(); // Insere o ano atual
+        }
+
+        // --- Animação de 'reveal' ao fazer scroll para secções ---
+        const sections = document.querySelectorAll('.section');
+        const revealSection = (entries, observer) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) { // Se a secção está visível
+                    entry.target.style.opacity = "1";
+                    entry.target.style.transform = "translateY(0)";
+                    // observer.unobserve(entry.target); // Descomentar para animar apenas uma vez
+                }
+            });
+        };
+        if (sections.length > 0) {
+            sections.forEach(section => {
+                section.style.opacity = "0"; // Começa invisível
+                section.style.transform = "translateY(30px)"; // Começa ligeiramente abaixo
+                section.style.transition = "opacity 0.6s ease-out, transform 0.6s ease-out"; // Transição suave
+            });
+            // Observador para acionar a animação quando a secção entra na viewport
+            const sectionObserver = new IntersectionObserver(revealSection, {
+                root: null, // Relativo à viewport
+                threshold: 0.10, // Aciona quando 10% da secção está visível
+            });
+            sections.forEach(section => { sectionObserver.observe(section); });
+        }
+
+        // --- Lógica para o Modal de Ampliar Imagem ---
+        const imageModal = document.getElementById('image-viewer-modal');
+        const modalImageContent = document.getElementById('modal-image-content');
+        const modalCaption = document.getElementById('modal-caption');
+        const closeModalBtn = document.querySelector('.close-modal-btn');
+        const resultImages = document.querySelectorAll('.result-card .result-img'); // Seleciona os divs das imagens
+
+        resultImages.forEach(imgContainer => {
+            imgContainer.addEventListener('click', () => {
+                const style = window.getComputedStyle(imgContainer);
+                const backgroundImage = style.backgroundImage;
+                // Extrai a URL da propriedade 'background-image'
+                const imageUrl = backgroundImage.replace(/^url\((['"]?)(.*)\1\)$/, '$2');
+
+                if (imageModal && modalImageContent && modalCaption && imageUrl && imageUrl !== 'none') {
+                    imageModal.style.display = "block"; // Mostra o modal
+                    modalImageContent.src = imageUrl; // Define a imagem no modal
+                    const cardTitleElement = imgContainer.closest('.result-card')?.querySelector('h3');
+                    modalCaption.innerHTML = cardTitleElement ? cardTitleElement.textContent : "Imagem Ampliada"; // Define a legenda
+                    document.body.classList.add('modal-active'); // Impede scroll do corpo da página
+                } else {
+                    console.warn("Não foi possível obter a URL da imagem de fundo ou elementos do modal não encontrados. Imagem de fundo:", backgroundImage);
+                }
+            });
+        });
+
+        // Função para fechar o modal de imagem
+        function closeModalImage() {
+            if (imageModal) {
+                imageModal.style.display = "none";
+                document.body.classList.remove('modal-active');
+            }
+        }
+
+        // Event listener para o botão de fechar
+        if (closeModalBtn) {
+            closeModalBtn.addEventListener('click', closeModalImage);
+        }
+        // Event listener para fechar o modal ao clicar no fundo (overlay)
+        if (imageModal) {
+            imageModal.addEventListener('click', (event) => {
+                if (event.target === imageModal) { // Verifica se o clique foi no próprio overlay
+                    closeModalImage();
+                }
+            });
+        }
+    });
+  </script>
+</body>
+</html>
